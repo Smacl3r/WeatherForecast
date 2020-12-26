@@ -1,0 +1,108 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="text-center">
+    <h3>Welcome to Weather Forecast page!</h3>
+    <h4>Enter your city name to get started!</h4>
+    <br />
+</div>
+
+<div class="m-auto col-sm-4 p-0">
+    <p>
+        <div class="input-group">
+            <input id="input" type="text" class="form-control" name="title" placeholder="Search...">
+            <div class="input-group-append">
+                <button id="submitCity" class="btn btn-secondary"><i class="fa fa-search"></i></button>
+            </div>
+        </div>
+    </p>
+</div>
+<div id="forecastInfo" class="mt-2">
+</div>
+
+<script>
+    $('#submitCity').on('click', function () {
+        LoadForecast();
+    });
+
+    $('#input').keypress(function (e) {
+        if (e.which == 13) {
+            LoadForecast();
+            return false;
+        }
+    });
+
+    function LoadForecast() {
+        var city = $('#input').val();
+        var link = "@Url.Action("ForecastInformationVC", "Home", new { city = "-1" })";
+        if (city.length > 0) {
+            link = link.replace("-1", city);
+        }
+        link = link.replace("amp;", "");
+        $("#forecastInfo").load(link, function () {
+            LoadChart();});
+        
+    };
+
+    function LoadChart() {
+        var items = [], options = [];
+
+        //Iterate all td's in a column
+        $('#forecastData tbody tr td:nth-child(1)').each(function () {
+            options.push($(this).text());
+        });
+        $('#forecastData tbody tr td:nth-child(3)').each(function () {
+            items.push($(this).text().substring(0, $(this).text().length-3));
+        });
+        if (items.length > 0) {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: options,
+                    datasets: [{
+                        label: 'Temperature',
+                        data: items,
+                        backgroundColor: 'rgba(189, 195, 199, 0.5)',
+                        borderColor: 'rgba(189, 195, 199, 0.7)',
+                        hoverBorderWidth: 3,
+                        hoverBorderColor: '#000',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Weather Forecast Chart'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Date time'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Temp, °C'
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+        
+    };
+</script>
